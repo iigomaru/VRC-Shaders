@@ -1,9 +1,9 @@
 ﻿Shader "iigo/2D-Hologram" {
-    //Shader by iigo丸 version 1.0
+    //Shader by iigo丸 version 1.1
     //A simple 2D hologram shader, originally made for Ostinyo
 
     Properties {
-        [Header(Shader by iigo version 1.0)]
+        [Header(Shader by iigo version 1.1)]
         [Space]
        [NoScaleOffset] _MainTex ("Texture", 2D) = "white" {}
         [Header(Hologram Bars)]
@@ -17,6 +17,7 @@
         _Alpha ("Maximum Alpha", Range(0,1)) = .5
         _MinDistance ("Minimum Fade Distance", Float) = 2
         _MaxDistance ("Maximum Fade Distance", Float) = 6
+        [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 0
 
     }
     SubShader {
@@ -24,7 +25,7 @@
 
         ZWrite off
         
-        cull off
+        Cull[_CullMode]
 
         Blend SrcAlpha OneMinusSrcAlpha
 
