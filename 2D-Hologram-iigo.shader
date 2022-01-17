@@ -1,11 +1,12 @@
 ﻿Shader "iigo/2D-Hologram" {
-    //Shader by iigo丸 version 1.1
+    //Shader by iigo丸 version 1.2
     //A simple 2D hologram shader, originally made for Ostinyo
 
     Properties {
-        [Header(Shader by iigo version 1.1)]
+        [Header(Shader by iigo version 1.2)]
         [Space]
        [NoScaleOffset] _MainTex ("Texture", 2D) = "white" {}
+       _Color ("Color" , Color) = (1,1,1,1)
         [Header(Hologram Bars)]
         [Space]
         _Frequency ("Frequency", float) = 250
@@ -55,6 +56,7 @@
             float _Alpha;
             float _MinDistance;
             float _MaxDistance;
+            float4 _Color;
             
 
             Interpolators vert (MeshData v) {
@@ -94,6 +96,8 @@
                 float Alpha = BarAlpha * MaximumAlpha * TextureMain.a;
 
                 float3 Color = lerp(0,TextureMain.rgb,RelativeDist);
+
+                Color = Color * _Color.rgb;
 
                 // Fixes issue with edge clamping, there is probably a more elegent way to do this
                 if ( TextureUV.x > 1 || TextureUV.x < 0 || TextureUV.y > 1 || TextureUV.y < 0 ) {
