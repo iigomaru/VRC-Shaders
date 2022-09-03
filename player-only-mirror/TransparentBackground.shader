@@ -3,7 +3,7 @@ Shader "Mirror/TransparentBackground"
 {
     Properties 
     {
-    [Header(Shader by iigo version 2.6)]
+    [Header(Shader by iigo version 3.0)]
 	// You can't have a header without a property lol this does nothing
     [Space(10)]
     [ToggleUI(iigo)] _iigo ("iigo", Int) = 1
@@ -13,7 +13,6 @@ Shader "Mirror/TransparentBackground"
     {   
         
         Tags { "RenderType"="Transparent" "Queue" = "AlphaTest" "IgnoreProjector"="True"}
-        Cull Front
         // This pass is only needed to fix issues with opaque geometry on avatars with non one alpha
         
         Pass

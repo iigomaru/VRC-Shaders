@@ -3,7 +3,7 @@ Shader "Mirror/VRCPlayersOnlyMirror"
 {
     Properties
     { 
-        [Header(Shader by iigo version 2.6)]
+        [Header(Shader by iigo version 3.0)]
         [HideInInspector] _ReflectionTex0("", 2D) = "white" {}
         [HideInInspector] _ReflectionTex1("", 2D) = "white" {}
         
