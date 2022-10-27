@@ -7,7 +7,7 @@
     //of the 'hologram' bars and the saturation of the color.
 
     Properties {
-        [Header(Shader by iigo version 2.0)]
+        [Header(Shader by iigo version 2.1)]
         [Space]
 
         [HDR]_Color ("Color" , Color) = (1,1,1,1)
@@ -20,6 +20,8 @@
         _BarThickness ("Bar Thickness", Range(-.5,2)) = 1.5
         _Speed ("Speed", Range(-1,1)) = .5
 
+        [IntRange] _Tiling ("Tiling Amount", Range(1,10)) = 1
+
         [Space]
         [Header(Distance Fade)]
         [Space]
@@ -30,7 +32,7 @@
     }
 
     SubShader {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" "PreviewType" = "Plane" }
 
         ZWrite off
         
@@ -45,6 +47,8 @@
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+
+            #define glsl_mod(x,y) (((x)-(y)*floor((x)/(y))))
 
             struct MeshData {
                 float4 vertex : POSITION;
@@ -71,11 +75,16 @@
             float _NumberOfBars;
             float _BarThickness;
             float _Speed;
+            int   _Tiling;
 
             // Distance Fade
             float _Alpha;
             float _MinDistance;
             float _MaxDistance;
+
+            // Vrchat Global Properties
+            float _VRChatMirrorMode;
+            float3 _VRChatMirrorCameraPos;
             
             Interpolators vert (MeshData v) {
 
@@ -88,6 +97,11 @@
                     float3 PlayerCenterCamera = _WorldSpaceCameraPos.xyz;
                 #endif
 
+                if (_VRChatMirrorMode > 0)
+                {
+                    PlayerCenterCamera = _VRChatMirrorCameraPos;
+                }
+
                 // gets the point plane distance of the Z negative direction of the object
                 float4 ObjectPos = mul( unity_ObjectToWorld, float4(0,0,0,1) );
                 float3 WorldspaceNZ = UnityObjectToWorldNormal( float3(0,0,-1));
@@ -96,7 +110,7 @@
 
                 // doing the hologram effect calculations in vertex function where possible
 
-                o.uv = ((v.uv - 0.5)/(lerp(.25,1, o.RELATIVEDIST))) + 0.5;
+                o.uv = v.uv;
 
                 float  Frequency = v.uv.y * _NumberOfBars * 8;
                 float  Speed = _Time.y * (_Speed * _NumberOfBars);
@@ -116,11 +130,17 @@
             
             float4 frag (Interpolators i) : SV_Target {
 
+                float2 UV = (((i.uv * _Tiling) - 0.5)) + 0.5;
+
+                UV = glsl_mod(UV, 1.0);
+
+                UV = ((UV - 0.5) / (lerp(.25,1, i.RELATIVEDIST))) + 0.5;
+
                 float  Bar = sin(i.PANNING);
 
                 float  BarAlpha = saturate(Bar + i.BARTHICKNESS);
 
-                float4 TextureMain = tex2D( _MainTex, i.uv );
+                float4 TextureMain = tex2D( _MainTex, UV );
 
                 float3 Color = lerp(float3(0,0,0), TextureMain.rgb, i.RELATIVEDIST);
 
@@ -129,7 +149,7 @@
                 float  FinalAlpha = BarAlpha * i.MAXIMUMALPHA * TextureMain.a;
 
                 // Fixes issue with edge clamping, there is probably a more elegent way to do this
-                if ( i.uv.x > 1 || i.uv.x < 0 || i.uv.y > 1 || i.uv.y < 0 ) {
+                if ( UV.x > 1 || UV.x < 0 || UV.y > 1 || UV.y < 0 ) {
                     FinalAlpha = 0;
                 }
 
